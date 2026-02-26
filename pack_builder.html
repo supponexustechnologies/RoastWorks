@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoastWorks — Pack Builder</title>
+  <style>
+    :root {
+      --bg:      #1C1410;
+      --surface: #24190F;
+      --card:    #2E2010;
+      --border:  #4A3218;
+      --primary: #C8902A;
+      --pri-dim: rgba(200,144,42,0.15);
+      --text:    #F0E6D3;
+      --muted:   #9E7D50;
+      --ok:      #52C87A;
+      --warn:    #E05252;
+      --radius:  12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 32px 16px 80px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 700px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 36px; }
+    .header h1 {
+      font-size: 30px; font-weight: 800;
+      color: var(--primary); letter-spacing: -0.5px;
+    }
+    .header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    .badge {
+      display: inline-block;
+      background: var(--pri-dim);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.2px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    input[type="text"], select, textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus { border-color: var(--primary); }
+    textarea { resize: vertical; line-height: 1.65; }
+    select { cursor: pointer; }
+
+    .field-row { display: flex; gap: 14px; }
+    .field-row .field { flex: 1; }
+    .field-row .field-narrow { flex: 0 0 160px; }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .counter {
+      font-size: 12px; color: var(--muted);
+      text-align: right; margin-top: 5px;
+      transition: color 0.2s;
+    }
+    .counter.ok   { color: var(--ok); }
+    .counter.warn { color: var(--warn); }
+
+    /* ── Pair cards ── */
+    .pair-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .pair-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .pair-label {
+      font-size: 11px; font-weight: 700;
+      color: var(--primary); letter-spacing: 1.2px;
+      text-transform: uppercase;
+      flex: 1;
+    }
+    .pair-remove {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .pair-remove:hover { color: var(--warn); }
+    .pair-remove:disabled { opacity: 0.25; cursor: not-allowed; }
+    .pair-field { margin-bottom: 10px; }
+    .pair-field:last-child { margin-bottom: 0; }
+
+    /* ── Preview ── */
+    .preview {
+      background: var(--surface);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .preview-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.2px; color: var(--primary);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .preview-joke {
+      font-size: 16px; color: var(--text);
+      line-height: 1.55; min-height: 50px;
+    }
+    .preview-joke em {
+      color: var(--primary);
+      font-style: normal;
+      font-weight: 700;
+    }
+    .preview-hint {
+      font-size: 13px; color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 20px; border-radius: 24px;
+      font-size: 14px; font-weight: 700;
+      font-family: var(--font); cursor: pointer; border: none;
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary  { background: var(--primary); color: #1C1410; }
+    .btn-outline  { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-ghost    { background: transparent; color: var(--muted);   border: 1.5px solid var(--border); }
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap;
+      gap: 10px; margin-bottom: 16px;
+      align-items: center;
+    }
+    .toolbar-spacer { flex: 1; }
+    .action-bar {
+      display: flex; flex-wrap: wrap;
+      gap: 12px; margin-top: 4px;
+    }
+
+    /* ── Info note ── */
+    .note {
+      background: var(--pri-dim);
+      border: 1px solid rgba(200,144,42,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px; color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .note strong { color: var(--primary); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 26px;
+      font-size: 14px; color: var(--text);
+      transition: transform 0.25s ease;
+      z-index: 9999; pointer-events: none;
+      white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .toast.show  { transform: translateX(-50%) translateY(0); }
+    .toast.ok    { border-color: var(--ok);   color: var(--ok); }
+    .toast.error { border-color: var(--warn); color: var(--warn); }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(28,20,16,0.3);
+      border-top-color: #1C1410;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 4px 0 16px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .field-row { flex-direction: column; }
+      .field-row .field-narrow { flex: 1; }
+    }
+
+    input[type="file"] { display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>☕ RoastWorks Pack Builder</h1>
+    <p>Create custom joke packs for the RoastWorks app</p>
+    <div class="badge">exports .snot files</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="btn btn-outline btn-sm" onclick="ui.loadSnot()">📂 Load .snot</button>
+    <div class="toolbar-spacer"></div>
+    <button class="btn btn-ghost  btn-sm" onclick="ui.reset()">✕ Clear</button>
+  </div>
+
+  <!-- Pack Details -->
+  <div class="card">
+    <div class="card-title">Pack Details</div>
+    <div class="field-row">
+      <div class="field">
+        <label for="packName">Pack Name</label>
+        <input type="text" id="packName"
+               placeholder="e.g. Office Roast Pack"
+               oninput="ui.refresh()">
+      </div>
+      <div class="field field-narrow">
+        <label for="packRating">Rating</label>
+        <select id="packRating" onchange="ui.refresh()">
+          <option value="G">G — Everyone</option>
+          <option value="PG">PG — Most Ages</option>
+          <option value="PG-13">PG-13 — Teens+</option>
+          <option value="R">R — Adults</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adjective Groups -->
+  <div class="card">
+    <div class="card-title">Adjective Groups — minimum 3 groups</div>
+    <div class="note" style="margin-bottom:14px">
+      Each adjective has its own <strong>matched exaggerations</strong>.
+      The joke picks an adjective and then an exaggeration from that same group —
+      so "clumsy" only pairs with clumsy-specific punchlines.
+    </div>
+    <div id="pairsContainer"></div>
+    <button class="btn btn-outline btn-sm" onclick="ui.addPair()" style="margin-top:4px">
+      + Add Adjective Group
+    </button>
+    <div class="counter" id="pairCounter">0 groups</div>
+  </div>
+
+  <!-- Live Preview -->
+  <div class="preview">
+    <div class="preview-label">🎯 Live Preview</div>
+    <div id="previewJoke" class="preview-hint">
+      Add adjective groups above to see a preview joke...
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost btn-sm" onclick="ui.shuffle()">↻ Shuffle</button>
+    </div>
+  </div>
+
+  <!-- Note -->
+  <div class="note">
+    <strong>About .snot files</strong> — Saved packs are encrypted and saved
+    with the <strong>.snot</strong> extension (SuppoNexus Technologies).
+    They can only be opened by the RoastWorks app or this tool.
+    Share them with friends who have RoastWorks installed.
+  </div>
+
+  <!-- Save -->
+  <div class="action-bar">
+    <button class="btn btn-primary" id="saveBtn" onclick="ui.save()">
+      💾 Save Pack (.snot)
+    </button>
+  </div>
+
+</div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="snotInput" accept=".snot" onchange="ui.onSnotLoaded(event)">
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// AES-256-GCM via Web Crypto API
+// Key: split to avoid a single obvious constant in source inspection.
+// ─────────────────────────────────────────────────────────────────
+const _seg = ['3a8c2f7e','1b4d9a5c','6f0e3b7d','2a9f4c8e',
+              '1d6b5a3f','9c2e7d4b','0a8f3c6e','1d9b5a2f'];
+
+function _hexBytes(h) {
+  const b = new Uint8Array(h.length >> 1);
+  for (let i = 0; i < b.length; i++) b[i] = parseInt(h.substr(i*2,2),16);
+  return b;
+}
+
+async function _key() {
+  return crypto.subtle.importKey(
+    'raw', _hexBytes(_seg.join('')),
+    { name:'AES-GCM' }, false, ['encrypt','decrypt']
+  );
+}
+
+// File layout: [12-byte nonce][ciphertext + 16-byte GCM tag]
+async function encrypt(jsonStr) {
+  const k   = await _key();
+  const iv  = crypto.getRandomValues(new Uint8Array(12));
+  const buf = await crypto.subtle.encrypt(
+    { name:'AES-GCM', iv, tagLength:128 }, k,
+    new TextEncoder().encode(jsonStr)
+  );
+  const out = new Uint8Array(12 + buf.byteLength);
+  out.set(iv, 0);
+  out.set(new Uint8Array(buf), 12);
+  return out;
+}
+
+async function decrypt(bytes) {
+  const k      = await _key();
+  const iv     = bytes.slice(0, 12);
+  const cipher = bytes.slice(12);
+  const plain  = await crypto.subtle.decrypt(
+    { name:'AES-GCM', iv, tagLength:128 }, k, cipher
+  );
+  return new TextDecoder().decode(plain);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function splitLines(text) {
+  return (text || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+}
+
+function setCounter(id, count, noun) {
+  const el = document.getElementById(id);
+  el.textContent = `${count} ${noun}${count !== 1 ? 's' : ''}`;
+  el.className   = 'counter ' + (count >= 3 ? 'ok' : count > 0 ? 'warn' : '');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────────────────
+let _toastTimer = null;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type;
+  void el.offsetWidth;
+  el.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Pairs state
+// ─────────────────────────────────────────────────────────────────
+let _pairId = 0;
+const _pairs = []; // [{id}]
+
+function _clearPairs() {
+  document.getElementById('pairsContainer').innerHTML = '';
+  _pairs.length = 0;
+}
+
+function _adjEl(id)  { return document.getElementById('adj_'  + id); }
+function _exagEl(id) { return document.getElementById('exag_' + id); }
+
+function _getPairs() {
+  return _pairs.map(({id}) => ({
+    adj:   (_adjEl(id)?.value  || '').trim(),
+    exags: splitLines(_exagEl(id)?.value || ''),
+  }));
+}
+
+function _updateGroupLabels() {
+  _pairs.forEach(({id}, i) => {
+    const lbl = document.querySelector('#pair_' + id + ' .pair-label');
+    if (lbl) lbl.textContent = 'Group ' + (i + 1);
+  });
+  // Disable remove buttons when only 1 group remains
+  document.querySelectorAll('.pair-remove').forEach(btn => {
+    btn.disabled = _pairs.length <= 1;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UI controller
+// ─────────────────────────────────────────────────────────────────
+const ui = {
+
+  addPair(adj, exag) {
+    adj  = adj  || '';
+    exag = exag || '';
+    const id = ++_pairId;
+    _pairs.push({id});
+
+    const container = document.getElementById('pairsContainer');
+    const div = document.createElement('div');
+    div.id = 'pair_' + id;
+    div.className = 'pair-card';
+    div.innerHTML =
+      '<div class="pair-header">' +
+        '<span class="pair-label">Group ' + _pairs.length + '</span>' +
+        '<button class="pair-remove" title="Remove group">✕</button>' +
+      '</div>' +
+      '<div class="pair-field">' +
+        '<label>Adjective</label>' +
+        '<input type="text" id="adj_' + id + '" placeholder="e.g. clumsy">' +
+      '</div>' +
+      '<div class="pair-field">' +
+        '<label>Matching Exaggerations (one per line)</label>' +
+        '<textarea id="exag_' + id + '" rows="4" ' +
+          'placeholder="she trips over flat surfaces&#10;she lost a fight to a revolving door"></textarea>' +
+      '</div>';
+
+    // Set values safely (avoids HTML-injection issues)
+    div.querySelector('#adj_'  + id).value = adj;
+    div.querySelector('#exag_' + id).value = exag;
+
+    // Attach events
+    div.querySelector('#adj_'  + id).addEventListener('input', () => ui.refresh());
+    div.querySelector('#exag_' + id).addEventListener('input', () => ui.refresh());
+    div.querySelector('.pair-remove').addEventListener('click', () => ui.removePair(id));
+
+    container.appendChild(div);
+    _updateGroupLabels();
+    this.refresh();
+  },
+
+  removePair(id) {
+    if (_pairs.length <= 1) return;
+    const idx = _pairs.findIndex(p => p.id === id);
+    if (idx !== -1) _pairs.splice(idx, 1);
+    document.getElementById('pair_' + id)?.remove();
+    _updateGroupLabels();
+    this.refresh();
+  },
+
+  refresh() {
+    const pairs = _getPairs();
+    const filledCount = pairs.filter(p => p.adj).length;
+    setCounter('pairCounter', filledCount, 'group');
+    this._preview(pairs);
+  },
+
+  shuffle() {
+    this._preview(_getPairs());
+  },
+
+  _preview(pairs) {
+    const el = document.getElementById('previewJoke');
+    const valid = pairs.filter(p => p.adj && p.exags.length > 0);
+    if (!valid.length) {
+      el.className = 'preview-hint';
+      el.innerHTML = 'Add adjective groups above to see a preview joke...';
+      return;
+    }
+    const pair = valid[Math.floor(Math.random() * valid.length)];
+    const exag = pair.exags[Math.floor(Math.random() * pair.exags.length)];
+    el.className = 'preview-joke';
+    el.innerHTML = 'Your Mother is so <em>' + escHtml(pair.adj) + '</em>\u2026 ' + escHtml(exag);
+  },
+
+  reset() {
+    document.getElementById('packName').value   = '';
+    document.getElementById('packRating').value = 'G';
+    _clearPairs();
+    this.addPair();
+    this.refresh();
+  },
+
+  _build() {
+    const name = document.getElementById('packName').value.trim();
+    if (!name) { toast('Pack name cannot be empty.', 'error'); return null; }
+
+    const pairs  = _getPairs();
+    const filled = pairs.filter(p => p.adj);
+    if (filled.length < 3) {
+      toast('Add at least 3 adjective groups.', 'error');
+      return null;
+    }
+    for (const p of filled) {
+      if (p.exags.length === 0) {
+        toast('"' + p.adj + '" needs at least one exaggeration.', 'error');
+        return null;
+      }
+    }
+    return {
+      id:         'user_' + Date.now(),
+      name,
+      roastLevel: 'custom',
+      rating:     document.getElementById('packRating').value,
+      isPremium:  true,
+      pairs:      filled.map(p => ({ adjective: p.adj, exaggerations: p.exags })),
+    };
+  },
+
+  async save() {
+    const pack = this._build();
+    if (!pack) return;
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Encrypting\u2026';
+    try {
+      const encrypted = await encrypt(JSON.stringify(pack, null, 2));
+      let safe = pack.name.replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_') || 'my_pack';
+      const blob = new Blob([encrypted], { type:'application/octet-stream' });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href:url, download: safe + '.snot' });
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Saved ' + safe + '.snot', 'ok');
+    } catch(e) {
+      toast('Encryption error: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '\uD83D\uDCBE Save Pack (.snot)';
+    }
+  },
+
+  loadSnot() { document.getElementById('snotInput').click(); },
+
+  async onSnotLoaded(ev) {
+    const file = ev.target.files[0];
+    ev.target.value = '';
+    if (!file) return;
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const json  = await decrypt(bytes);
+      this._populate(JSON.parse(json));
+      toast('Loaded: ' + (document.getElementById('packName').value || file.name), 'ok');
+    } catch(_) {
+      toast('Could not decrypt \u2014 wrong file or corrupted.', 'error');
+    }
+  },
+
+  _populate(pack) {
+    document.getElementById('packName').value   = pack.name   || '';
+    document.getElementById('packRating').value =
+      ['G','PG','PG-13','R'].includes(pack.rating) ? pack.rating : 'G';
+
+    _clearPairs();
+
+    if (pack.pairs && pack.pairs.length > 0) {
+      for (const p of pack.pairs) {
+        this.addPair(p.adjective || '', (p.exaggerations || []).join('\n'));
+      }
+    } else {
+      this.addPair();
+    }
+
+    this.refresh();
+  },
+};
+
+// Init — start with one empty group
+ui.addPair();
+</script>
+</body>
+</html>
